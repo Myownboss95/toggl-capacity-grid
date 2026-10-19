@@ -30,3 +30,212 @@ td {
   padding: 0.5rem 0.75rem;
   text-align: left;
 }
+
+:root {
+  --muted: color-mix(in srgb, currentColor 55%, transparent);
+  --line: color-mix(in srgb, currentColor 20%, transparent);
+  --surface: light-dark(#fff, #1b1b1f);
+  --over-bg: light-dark(#fde2e1, #4a1d1c);
+  --over-fg: light-dark(#9b1c1c, #ffb4ab);
+  --error-fg: light-dark(#9b1c1c, #ffb4ab);
+  --focus: light-dark(#1d4ed8, #93b4ff);
+  background: var(--surface);
+}
+
+:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+}
+
+button {
+  font: inherit;
+  padding: 0.3rem 0.7rem;
+  cursor: pointer;
+}
+
+button[aria-disabled='true'] {
+  cursor: progress;
+  opacity: 0.6;
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.range-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 1.25rem;
+  margin-bottom: 0.75rem;
+}
+
+.range-nav {
+  display: flex;
+  gap: 0.4rem;
+}
+
+.range-form {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.range-form label {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.range-form input {
+  font: inherit;
+}
+
+.range-summary {
+  margin: 0;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.field-error {
+  flex-basis: 100%;
+  margin: 0;
+  color: var(--error-fg);
+}
+
+.field-error:empty {
+  display: none;
+}
+
+.status {
+  min-height: 1.5rem;
+  color: var(--muted);
+}
+
+.load-error {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 0.75rem;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--error-fg);
+  border-radius: 6px;
+  color: var(--error-fg);
+}
+
+.load-error p {
+  margin: 0;
+}
+
+.grid-scroll {
+  max-height: 75vh;
+  overflow: auto;
+  border: 1px solid var(--line);
+}
+
+.grid {
+  transition: opacity 120ms;
+}
+
+.grid.is-stale {
+  opacity: 0.45;
+}
+
+.grid caption {
+  padding: 0.5rem 0.75rem;
+  text-align: left;
+  color: var(--muted);
+}
+
+.grid thead th {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  background: var(--surface);
+}
+
+.grid tbody th {
+  position: sticky;
+  left: 0;
+  z-index: 1;
+  background: var(--surface);
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.week-head abbr {
+  text-decoration: none;
+  display: block;
+}
+
+.week-date {
+  display: block;
+  font-weight: normal;
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+.capacity-cell {
+  white-space: nowrap;
+}
+
+.cell {
+  min-width: 6.5rem;
+  white-space: nowrap;
+}
+
+.cell.is-free .cell-hours {
+  color: var(--muted);
+}
+
+.cell.is-over {
+  background: var(--over-bg);
+  color: var(--over-fg);
+  font-weight: 600;
+}
+
+.cell-flag {
+  display: block;
+  font-size: 0.85em;
+}
+
+.empty {
+  color: var(--muted);
+}
+
+.skeleton {
+  display: grid;
+  gap: 0.5rem;
+  max-width: 48rem;
+}
+
+.skeleton-row {
+  display: grid;
+  grid-template-columns: 2fr repeat(4, 1fr);
+  gap: 0.5rem;
+}
+
+.skeleton-cell {
+  height: 1.6rem;
+  border-radius: 4px;
+  background: var(--line);
+  animation: pulse 1.2s ease-in-out infinite alternate;
+}
+
+@keyframes pulse {
+  to {
+    opacity: 0.4;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .skeleton-cell {
+    animation: none;
+  }
+}

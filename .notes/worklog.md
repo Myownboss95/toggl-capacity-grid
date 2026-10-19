@@ -16,3 +16,10 @@ left unfinished. Append as you go; a line or two per entry is right.
 - Query: per-day `generate_series` clipped to the range, ISODOW 1–5, bucketed by `date_trunc('week')`. EXPLAIN for 26 weeks: seq scan of 38k overlapping rows → 263k days → 4k cells, 60–120 ms.
 - Deferred: the `(start_date, end_date)` btree can't serve an overlap predicate (only the `start_date <=` half). Production wants a GiST index on `daterange(start_date, end_date, '[]')`; the schema is fixed here.
 - Verified: API returns Ana 40/–/30, Dee –/45/40, Eli –/20/– for W1–W3 2026, matching a hand reading of their assignment rows. Bad dates, inverted and >26-week ranges return 400 JSON errors.
+- Data: people 1–5 (Ana, Bo, Cem, Dee, Eli) only have assignments in 2025-12-29..2026-01-16; outside W1–W3 2026 they're all zeros, which is correct.
+- UI: range state lives in `App`, not the grid, because the overview page's timeline will share it. It's mirrored to `?from=&to=` with `replaceState` (no history entry per click); the grid gets `from`/`to` + `onRangeChange` and renders the controls.
+- UI: the date inputs are a draft applied with a button, so a half-typed date never fires a request; client checks mirror the API's 400s. Prev/next keep the span.
+- UI: out-of-order guard is two layers: each range aborts the previous request (cancelling its query via `r.Context()`), and the reducer drops any response whose request id isn't the latest.
+- UI: previous data stays on screen dimmed (`aria-busy`) while the next range loads or if it fails; the failure banner says which range is shown instead and offers retry. Skeleton only on first load.
+- Verified: 8 prev/next clicks 40 ms apart in the browser land on the right range (W6–W8), headers and cells agree, grid un-dims. Not covered: 5 `click()`s in one JS task shift once (each reads the same render's range); real clicks are separate tasks, so left as is.
+- Verified: time-zone test is meaningful — Node honours a runtime `TZ` change (`new Date('2026-01-01').getDate()` is 31 in LA), so a local-time implementation would fail it.
