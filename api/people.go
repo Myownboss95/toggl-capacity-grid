@@ -2,6 +2,12 @@ package main
 
 import "net/http"
 
+type person struct {
+	ID          int     `json:"id"`
+	Name        string  `json:"name"`
+	WeeklyHours float64 `json:"weeklyHours"`
+}
+
 // handleUpdatePerson serves PATCH /api/people/{id}
 //
 // It should update the person's weekly hours. What it returns is yours to
