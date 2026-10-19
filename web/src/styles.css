@@ -135,11 +135,14 @@ button[aria-disabled='true'] {
   border: 1px solid var(--line);
 }
 
-.grid {
+/* Only week data belongs to a range; names and capacity stay current. */
+.grid .week-head,
+.grid .cell {
   transition: opacity 120ms;
 }
 
-.grid.is-stale {
+.grid.is-stale .week-head,
+.grid.is-stale .cell {
   opacity: 0.45;
 }
 
@@ -179,7 +182,7 @@ button[aria-disabled='true'] {
 
 /* Wide enough for the editor, so opening it doesn't shift the weeks. */
 .capacity-cell {
-  width: 14rem;
+  width: 15rem;
   white-space: nowrap;
 }
 
@@ -261,7 +264,7 @@ button[aria-disabled='true'] {
 
 .hours-form input {
   font: inherit;
-  width: 4.5rem;
+  width: 4rem;
 }
 
 .hours-form[aria-busy='true'] input {
