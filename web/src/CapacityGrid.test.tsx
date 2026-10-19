@@ -50,6 +50,12 @@ describe('CapacityGrid', () => {
     expect(row).not.toHaveTextContent(/NaN|Infinity/)
   })
 
+  it('announces the first load to screen readers', () => {
+    stubFetch()
+    render(<CapacityGrid from="2026-01-05" to="2026-01-11" onRangeChange={() => {}} />)
+    expect(screen.getByRole('status')).toHaveTextContent('Loading capacity…')
+  })
+
   it('shows an error with a retry when the first load fails', async () => {
     const fetch = stubFetch()
     render(<CapacityGrid from="2026-01-05" to="2026-01-11" onRangeChange={() => {}} />)

@@ -102,6 +102,15 @@ describe('editing weekly hours', () => {
 })
 
 describe('API errors in the editor', () => {
+  it('does not claim "not saved" when the save answered with something unreadable', async () => {
+    const { fetch } = await renderLoadedGrid()
+    startEditing('30')
+    fireEvent.click(screen.getByRole('button', { name: 'Save' }))
+    await act(async () => fetch.last().respond(new Response('<html>proxy page</html>', { status: 200 })))
+    expect(screen.getByRole('alert')).toHaveTextContent('may not have been saved; retry to make sure')
+    expect(screen.getByRole('alert')).not.toHaveTextContent('Not saved.')
+  })
+
   it('shows the server explanation for a rejected value', async () => {
     const { fetch } = await renderLoadedGrid()
     startEditing('30')

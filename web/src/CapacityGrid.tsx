@@ -23,11 +23,11 @@ export function CapacityGrid({ from, to, onRangeChange }: Props) {
   const requested = `${formatDate(from, { withYear: true })} – ${formatDate(to, { withYear: true })}`
 
   return (
-    <section className="capacity" aria-busy={request.status === 'loading'}>
+    <section className="capacity">
       <RangeControls range={{ from, to }} onChange={onRangeChange} />
 
       <div className="status" role="status">
-        {request.status === 'loading' && data && <span>Loading {requested}…</span>}
+        {request.status === 'loading' && (data ? `Loading ${requested}…` : 'Loading capacity…')}
       </div>
       {request.status === 'error' && (
         <div className="load-error" role="alert">
@@ -55,7 +55,7 @@ export function CapacityGrid({ from, to, onRangeChange }: Props) {
 function Grid({ data, stale, onSaved }: { data: CapacityData; stale: boolean; onSaved: (person: Person) => void }) {
   return (
     <div className="grid-scroll">
-      <table className={stale ? 'grid is-stale' : 'grid'}>
+      <table className={stale ? 'grid is-stale' : 'grid'} aria-busy={stale}>
         <caption>
           Allocated / capacity hours per person and ISO week, {formatDate(data.from, { withYear: true })} –{' '}
           {formatDate(data.to, { withYear: true })}. Weeks over capacity are marked ⚠.
@@ -135,7 +135,6 @@ function GridSkeleton() {
           ))}
         </div>
       ))}
-      <span className="visually-hidden">Loading capacity…</span>
     </div>
   )
 }

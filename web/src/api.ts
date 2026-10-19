@@ -16,12 +16,6 @@ export type CapacityData = {
   allocations: ReadonlyMap<string, number>
 }
 
-/**
- * How long a save may take before the editor reports it. PATCH sets an
- * absolute value, so retrying after a timeout is safe.
- */
-const SAVE_TIMEOUT_MS = 15_000
-
 export function cellKey(personId: number, weekStart: string): string {
   return `${personId}:${weekStart}`
 }
@@ -39,7 +33,7 @@ export class ApiError extends Error {
   }
 }
 
-export function isAbortError(error: unknown): boolean {
+function isAbortError(error: unknown): boolean {
   return error instanceof Error && error.name === 'AbortError'
 }
 
@@ -55,6 +49,12 @@ export async function fetchCapacity(range: DateRange, signal: AbortSignal): Prom
   const params = new URLSearchParams({ from: range.from, to: range.to })
   return parseCapacity(await request(`/api/capacity?${params}`, { signal }))
 }
+
+/**
+ * How long a save may take before the editor reports it. PATCH sets an
+ * absolute value, so retrying after a timeout is safe.
+ */
+const SAVE_TIMEOUT_MS = 15_000
 
 export async function updateWeeklyHours(personId: number, weeklyHours: number): Promise<Person> {
   const body = await request(`/api/people/${personId}`, {
@@ -99,7 +99,7 @@ async function request(url: string, init: RequestInit): Promise<unknown> {
 }
 
 function timedOut(): ApiError {
-  return new ApiError('timeout', "The server didn't answer in time, so the change may not have been saved. Retry to make sure.")
+  return new ApiError('timeout', "The server didn't answer in time.")
 }
 
 function malformed(): ApiError {

@@ -51,8 +51,11 @@ export function WeeklyHoursEditor({ person, onSaved }: Props) {
       onSaved(await updateWeeklyHours(person.id, parsed.hours))
       close()
     } catch (error) {
-      const unknownOutcome = error instanceof ApiError && error.kind === 'timeout'
-      const message = unknownOutcome ? errorMessage(error) : `Not saved. ${errorMessage(error)}`
+      // No answer, or one we can't read: the update may have committed.
+      const outcomeUnknown = error instanceof ApiError && (error.kind === 'timeout' || error.kind === 'malformed')
+      const message = outcomeUnknown
+        ? `${errorMessage(error)} The change may not have been saved; retry to make sure.`
+        : `Not saved. ${errorMessage(error)}`
       setEdit({ status: 'editing', draft, error: message, saveFailed: true })
     } finally {
       inFlight.current = false
@@ -71,7 +74,7 @@ export function WeeklyHoursEditor({ person, onSaved }: Props) {
           }
         }}
         onClick={() => setEdit({ status: 'editing', draft: String(person.weeklyHours), error: null, saveFailed: false })}
-        aria-label={`Edit weekly hours for ${person.name}, currently ${formatHours(person.weeklyHours)}`}
+        aria-label={`Edit weekly hours for ${person.name}, currently ${formatHours(person.weeklyHours)} h`}
       >
         {formatHours(person.weeklyHours)} h <span aria-hidden="true">✎</span>
       </button>
