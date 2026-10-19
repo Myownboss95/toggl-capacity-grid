@@ -109,10 +109,6 @@ button[aria-disabled='true'] {
   color: var(--error-fg);
 }
 
-.field-error:empty {
-  display: none;
-}
-
 .status {
   min-height: 1.5rem;
   color: var(--muted);
@@ -181,7 +177,9 @@ button[aria-disabled='true'] {
   white-space: nowrap;
 }
 
+/* Wide enough for the editor, so opening it doesn't shift the weeks. */
 .capacity-cell {
+  width: 14rem;
   white-space: nowrap;
 }
 
@@ -238,4 +236,42 @@ button[aria-disabled='true'] {
   .skeleton-cell {
     animation: none;
   }
+}
+
+.hours-button {
+  background: none;
+  border: 1px solid transparent;
+  border-radius: 4px;
+  color: inherit;
+  padding: 0.15rem 0.4rem;
+  margin-left: -0.4rem;
+}
+
+.hours-button:hover {
+  border-color: var(--line);
+}
+
+.hours-form {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.3rem;
+  max-width: 16rem;
+}
+
+.hours-form input {
+  font: inherit;
+  width: 4.5rem;
+}
+
+.hours-form[aria-busy='true'] input {
+  opacity: 0.6;
+}
+
+.row-error {
+  flex-basis: 100%;
+  margin: 0;
+  white-space: normal;
+  color: var(--error-fg);
+  font-size: 0.85em;
 }

@@ -50,12 +50,12 @@ describe('CapacityGrid', () => {
     expect(row).not.toHaveTextContent(/NaN|Infinity/)
   })
 
-  it('shows the server error with a retry when the first load fails', async () => {
+  it('shows an error with a retry when the first load fails', async () => {
     const fetch = stubFetch()
     render(<CapacityGrid from="2026-01-05" to="2026-01-11" onRangeChange={() => {}} />)
     await act(async () => fetch.last().respond(jsonResponse({ error: 'internal error' }, 500)))
 
-    expect(screen.getByText(/Couldn't load/)).toHaveTextContent('internal error')
+    expect(screen.getByText(/Couldn't load/)).toHaveTextContent('(error 500)')
     act(() => screen.getByRole('button', { name: 'Try again' }).click())
     await act(async () => fetch.last().respond(jsonResponse(capacityBody(['2026-01-05'], [ana]))))
     expect(screen.getByRole('row', { name: /Ana Ferreira/ })).toHaveTextContent('0 / 40')

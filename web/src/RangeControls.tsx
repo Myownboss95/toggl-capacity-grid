@@ -67,9 +67,11 @@ function RangeForm({ range, onApply }: { range: DateRange; onApply: (range: Date
         />
       </label>
       <button type="submit">Show range</button>
-      <p id={errorId} className="field-error" role="alert">
-        {error}
-      </p>
+      {error && (
+        <p id={errorId} className="field-error" role="alert">
+          {error}
+        </p>
+      )}
     </form>
   )
 }

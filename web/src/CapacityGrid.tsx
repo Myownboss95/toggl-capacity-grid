@@ -3,8 +3,10 @@ import { cellKey } from './api'
 import type { CapacityData, Person, Week } from './api'
 import { formatDate } from './dates'
 import type { DateRange } from './dates'
+import { formatHours } from './hours'
 import { RangeControls } from './RangeControls'
 import { useCapacity } from './useCapacity'
+import { WeeklyHoursEditor } from './WeeklyHoursEditor'
 
 type Props = {
   from: string
@@ -16,7 +18,7 @@ type Props = {
 // allocated / capacity hours per cell and flagging over-allocation with an
 // icon and text as well as colour.
 export function CapacityGrid({ from, to, onRangeChange }: Props) {
-  const { request, retry } = useCapacity(from, to)
+  const { request, retry, personSaved } = useCapacity(from, to)
   const { data } = request
   const requested = `${formatDate(from, { withYear: true })} – ${formatDate(to, { withYear: true })}`
 
@@ -44,13 +46,13 @@ export function CapacityGrid({ from, to, onRangeChange }: Props) {
       ) : data.people.length === 0 ? (
         <p className="empty">No people on this team yet.</p>
       ) : (
-        <Grid data={data} stale={request.status !== 'success'} />
+        <Grid data={data} stale={request.status !== 'success'} onSaved={personSaved} />
       )}
     </section>
   )
 }
 
-function Grid({ data, stale }: { data: CapacityData; stale: boolean }) {
+function Grid({ data, stale, onSaved }: { data: CapacityData; stale: boolean; onSaved: (person: Person) => void }) {
   return (
     <div className="grid-scroll">
       <table className={stale ? 'grid is-stale' : 'grid'}>
@@ -72,7 +74,13 @@ function Grid({ data, stale }: { data: CapacityData; stale: boolean }) {
         </thead>
         <tbody>
           {data.people.map((person) => (
-            <PersonRow key={person.id} person={person} weeks={data.weeks} allocations={data.allocations} />
+            <PersonRow
+              key={person.id}
+              person={person}
+              weeks={data.weeks}
+              allocations={data.allocations}
+              onSaved={onSaved}
+            />
           ))}
         </tbody>
       </table>
@@ -84,13 +92,16 @@ type RowProps = {
   person: Person
   weeks: Week[]
   allocations: ReadonlyMap<string, number>
+  onSaved: (person: Person) => void
 }
 
-const PersonRow = memo(function PersonRow({ person, weeks, allocations }: RowProps) {
+const PersonRow = memo(function PersonRow({ person, weeks, allocations, onSaved }: RowProps) {
   return (
     <tr>
       <th scope="row">{person.name}</th>
-      <td className="capacity-cell">{formatHours(person.weeklyHours)} h</td>
+      <td className="capacity-cell">
+        <WeeklyHoursEditor person={person} onSaved={onSaved} />
+      </td>
       {weeks.map((week) => (
         <WeekCell
           key={week.start}
@@ -127,10 +138,4 @@ function GridSkeleton() {
       <span className="visually-hidden">Loading capacity…</span>
     </div>
   )
-}
-
-const hours = new Intl.NumberFormat(undefined, { maximumFractionDigits: 2 })
-
-function formatHours(value: number): string {
-  return hours.format(value)
 }

@@ -16,13 +16,19 @@ export type CapacityData = {
   allocations: ReadonlyMap<string, number>
 }
 
+/**
+ * How long a save may take before the editor reports it. PATCH sets an
+ * absolute value, so retrying after a timeout is safe.
+ */
+const SAVE_TIMEOUT_MS = 15_000
+
 export function cellKey(personId: number, weekStart: string): string {
   return `${personId}:${weekStart}`
 }
 
 /** A request that reached no answer we can use; `message` is fit to show. */
 export class ApiError extends Error {
-  readonly kind: 'network' | 'http' | 'malformed'
+  readonly kind: 'network' | 'timeout' | 'http' | 'malformed'
   readonly status: number | null
 
   constructor(kind: ApiError['kind'], message: string, status: number | null = null) {
@@ -37,6 +43,10 @@ export function isAbortError(error: unknown): boolean {
   return error instanceof Error && error.name === 'AbortError'
 }
 
+function isTimeoutError(error: unknown): boolean {
+  return error instanceof Error && error.name === 'TimeoutError'
+}
+
 export function errorMessage(error: unknown): string {
   return error instanceof Error ? error.message : 'Something went wrong.'
 }
@@ -46,11 +56,22 @@ export async function fetchCapacity(range: DateRange, signal: AbortSignal): Prom
   return parseCapacity(await request(`/api/capacity?${params}`, { signal }))
 }
 
+export async function updateWeeklyHours(personId: number, weeklyHours: number): Promise<Person> {
+  const body = await request(`/api/people/${personId}`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ weeklyHours }),
+    signal: AbortSignal.timeout(SAVE_TIMEOUT_MS),
+  })
+  return parsePerson(body)
+}
+
 async function request(url: string, init: RequestInit): Promise<unknown> {
   let res: Response
   try {
     res = await fetch(url, init)
   } catch (error) {
+    if (isTimeoutError(error)) throw timedOut()
     if (isAbortError(error)) throw error
     throw new ApiError('network', "Couldn't reach the server. Check your connection and try again.")
   }
@@ -59,16 +80,26 @@ async function request(url: string, init: RequestInit): Promise<unknown> {
   try {
     body = await res.json()
   } catch (error) {
+    if (isTimeoutError(error)) throw timedOut()
     if (isAbortError(error)) throw error
     body = undefined
   }
 
   if (!res.ok) {
+    // 4xx messages explain what to fix; 5xx ones are for the server log.
     const serverMessage = isRecord(body) && typeof body.error === 'string' ? body.error : null
-    throw new ApiError('http', serverMessage ?? `The server answered ${res.status}.`, res.status)
+    const message =
+      res.status < 500 && serverMessage !== null
+        ? serverMessage
+        : `The server couldn't complete the request (error ${res.status}). Try again in a moment.`
+    throw new ApiError('http', message, res.status)
   }
   if (body === undefined) throw malformed()
   return body
+}
+
+function timedOut(): ApiError {
+  return new ApiError('timeout', "The server didn't answer in time, so the change may not have been saved. Retry to make sure.")
 }
 
 function malformed(): ApiError {
@@ -79,7 +110,7 @@ function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value)
 }
 
-export function parsePerson(value: unknown): Person {
+function parsePerson(value: unknown): Person {
   if (
     isRecord(value) &&
     typeof value.id === 'number' &&
